@@ -1,0 +1,40 @@
+version: "3.9"
+
+x-golang-tmlp:
+  &golang-tmlp
+  image: ruskotwo/derive-bot:latest
+  restart: on-failure
+  env_file:
+    - ./config/.env
+  networks:
+    - derive-bot-network
+
+services:
+
+  derive-bot-migrate:
+    <<: *golang-tmlp
+    restart: no
+    command:
+      - "migrate"
+      - "up"
+
+  derive-bot-telegram:
+    <<: *golang-tmlp
+    command:
+      - "telegram"
+
+  derive-bot-mysql:
+    image: mysql:8
+    container_name: derive-bot-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./config/.env
+    networks:
+      - derive-bot-network
+
+networks:
+  derive-bot-network:
+    name: derive-bot-network
+    driver: bridge
