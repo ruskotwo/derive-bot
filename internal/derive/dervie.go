@@ -14,12 +14,12 @@ import (
 
 const defaultLang = "ru"
 
-const CompleteTillSeconds = 15
-const CompleteTill = CompleteTillSeconds * time.Second
+const CompleteTill = time.Minute
 
 var NotFoundNextQuestError = errors.New("not found next quest")
 var NotFoundJourneyError = errors.New("not found journey")
 var JourneyAlreadyCompletedError = errors.New("journey already completed")
+var JourneyAlreadyCanselError = errors.New("journey already cansel")
 var JourneyCannotBeCompletedYetError = errors.New("journey cannot be completed yet")
 
 type Derive struct {
@@ -73,6 +73,25 @@ func (d Derive) LetsDerive(userModel *user.Model) (*journey.Model, *quest.Model,
 	return d.StartDerive(userModel, d.getNextCategory(lastQuest.CategoryId))
 }
 
+func (d Derive) GetAndValidateProgressJourney(journeyId int, userId int) (*journey.Model, error) {
+	journeyModel, err := d.journeyRepository.GetOneByIdAndUserId(journeyId, userId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, NotFoundJourneyError
+		}
+		return nil, err
+	}
+
+	switch journeyModel.Progress {
+	case journey.ProgressCompleted:
+		return journeyModel, JourneyAlreadyCompletedError
+	case journey.ProgressCansel:
+		return journeyModel, JourneyAlreadyCanselError
+	default:
+		return journeyModel, nil
+	}
+}
+
 func (d Derive) CompleteJourney(journeyId int, userId int) error {
 	d.logger.Info(
 		"CompleteJourney",
@@ -82,14 +101,7 @@ func (d Derive) CompleteJourney(journeyId int, userId int) error {
 
 	journeyModel, err := d.journeyRepository.GetOneByIdAndUserId(journeyId, userId)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return NotFoundJourneyError
-		}
 		return err
-	}
-
-	if journeyModel.Progress == journey.ProgressCompleted {
-		return JourneyAlreadyCompletedError
 	}
 
 	if journeyModel.CompleteTillAt.After(time.Now()) {
@@ -104,6 +116,33 @@ func (d Derive) CompleteJourney(journeyId int, userId int) error {
 
 	d.logger.Info(
 		"completed journey",
+		slog.Int(logger.UserId, userId),
+		slog.Int(logger.JourneyId, journeyId),
+	)
+
+	return nil
+}
+
+func (d Derive) CanselJourney(journeyId int, userId int) error {
+	d.logger.Info(
+		"CanselJourney",
+		slog.Int(logger.UserId, userId),
+		slog.Int(logger.JourneyId, journeyId),
+	)
+
+	journeyModel, err := d.journeyRepository.GetOneByIdAndUserId(journeyId, userId)
+	if err != nil {
+		return err
+	}
+
+	journeyModel.Progress = journey.ProgressCansel
+	err = d.journeyRepository.Save(journeyModel)
+	if err != nil {
+		return err
+	}
+
+	d.logger.Info(
+		"cansel journey",
 		slog.Int(logger.UserId, userId),
 		slog.Int(logger.JourneyId, journeyId),
 	)

@@ -12,6 +12,7 @@ const (
 	LetsStartBtn       = "lets_start"
 	ShowAboutBtn       = "show_about"
 	CompleteJourneyBtn = "complete_journey"
+	FinishJourneyBtn   = "finish_journey"
 )
 
 var json = jsoniter.ConfigFastest
