@@ -113,7 +113,7 @@ func (b *TelegramBot) handleCallbackQuery(dto handleDTO) error {
 
 		return b.letsStart(dto.update.CallbackQuery.From.ID, dto.localizer, dto.user)
 	case FinishJourneyBtn:
-		ok, err := b.FinishJourney(
+		ok, err := b.finishJourney(
 			dto.update.CallbackQuery,
 			dto.localizer,
 			dto.user,

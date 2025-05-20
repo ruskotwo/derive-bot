@@ -34,7 +34,7 @@ other = "Вперед!"
 [new_journey_btn]
 other = "Новое приключение!"
 
-[next_journey_btn]
+[complete_journey_btn]
 other = "Идем дальше!"
 
 [finish_journey_btn]

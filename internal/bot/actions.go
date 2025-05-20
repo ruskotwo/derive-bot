@@ -52,7 +52,7 @@ func (b *TelegramBot) sendStartMessage(chatID int64, localizer *i18n.Localizer) 
 
 func (b *TelegramBot) sendAboutMessage(chatID int64, localizer *i18n.Localizer, needPrefix bool) error {
 	if needPrefix {
-		err := b.sendPartAboutMessage(chatID, localizer, "about_msg_preface", false)
+		err := b.sendPartAboutMessage(chatID, localizer, "about_msg_prefix", false)
 		if err != nil {
 			b.logger.Error(
 				fmt.Sprintf("failed to handle update: %v", err),
@@ -173,7 +173,7 @@ func (b *TelegramBot) completeJourney(
 	return true, nil
 }
 
-func (b *TelegramBot) FinishJourney(
+func (b *TelegramBot) finishJourney(
 	callbackQuery *tgbotapi.CallbackQuery,
 	localizer *i18n.Localizer,
 	userModel *user.Model,
