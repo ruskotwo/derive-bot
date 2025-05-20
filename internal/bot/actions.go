@@ -252,10 +252,29 @@ func (b *TelegramBot) sendQuestMessage(
 		),
 	)
 
-	msg := tgbotapi.NewMessage(chatID, questModel.Description)
-	msg.ReplyMarkup = keyboard
+	switch true {
+	case questModel.File != nil:
+		msg := tgbotapi.NewPhoto(chatID, tgbotapi.FileURL(*questModel.File))
+		msg.Caption = questModel.Description
+		msg.ReplyMarkup = keyboard
+		_, err = b.api.Send(msg)
+		if err == nil {
+			return nil
+		}
 
-	_, err = b.api.Send(msg)
+		b.logger.Error(
+			fmt.Sprintf("failed to send photo: %v", err),
+			slog.Int(logger.TelegramUserId, int(chatID)),
+			slog.Int(logger.JourneyId, journeyModel.Id),
+			slog.Int(logger.QuestId, questModel.Id),
+		)
+
+		fallthrough
+	default:
+		msg := tgbotapi.NewMessage(chatID, questModel.Description)
+		msg.ReplyMarkup = keyboard
+		_, err = b.api.Send(msg)
+	}
 
 	return err
 }
