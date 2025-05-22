@@ -65,9 +65,6 @@ func (b *TelegramBot) sendAboutMessage(chatID int64, localizer *i18n.Localizer, 
 		"about_msg_preface",
 		"about_msg_whats_its_works",
 		"about_msg_rules",
-		"about_msg_first_rule",
-		"about_msg_second_rule",
-		"about_msg_third_rule",
 		"about_msg_conclusion",
 	}
 
@@ -91,6 +88,7 @@ func (b *TelegramBot) sendPartAboutMessage(chatID int64, localizer *i18n.Localiz
 	}
 
 	msg := tgbotapi.NewMessage(chatID, text)
+	msg.ParseMode = tgbotapi.ModeHTML
 
 	if isConclusion {
 		letsStartBtnText, err := localizer.LocalizeMessage(&i18n.Message{ID: "lets_start_btn"})
@@ -283,12 +281,7 @@ func (b *TelegramBot) sendFinishMessage(
 	chatID int64,
 	localizer *i18n.Localizer,
 ) error {
-	finishJourneyMsg1Text, err := localizer.LocalizeMessage(&i18n.Message{ID: "finish_journey_msg_1"})
-	if err != nil {
-		return err
-	}
-
-	finishJourneyMsg2Text, err := localizer.LocalizeMessage(&i18n.Message{ID: "finish_journey_msg_2"})
+	finishJourneyMsgText, err := localizer.LocalizeMessage(&i18n.Message{ID: "finish_journey_msg"})
 	if err != nil {
 		return err
 	}
@@ -298,8 +291,6 @@ func (b *TelegramBot) sendFinishMessage(
 		return err
 	}
 
-	_, err = b.api.Send(tgbotapi.NewMessage(chatID, finishJourneyMsg1Text))
-
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData(newJourneyBtnText, CallbackData{
@@ -308,7 +299,7 @@ func (b *TelegramBot) sendFinishMessage(
 		),
 	)
 
-	msg := tgbotapi.NewMessage(chatID, finishJourneyMsg2Text)
+	msg := tgbotapi.NewMessage(chatID, finishJourneyMsgText)
 	msg.ReplyMarkup = keyboard
 
 	_, err = b.api.Send(msg)
