@@ -14,7 +14,7 @@ import (
 
 const defaultLang = "ru"
 
-const CompleteTill = time.Minute
+const CompleteTill = 0
 
 var NotFoundNextQuestError = errors.New("not found next quest")
 var NotFoundJourneyError = errors.New("not found journey")
